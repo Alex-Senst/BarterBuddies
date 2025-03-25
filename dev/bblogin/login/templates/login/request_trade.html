@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<body>        
+    {% include "login/navbar.html" %}
+    <div class="content">
+        <h2>Request a Trade</h2>
+  
+        <p>You are requesting to trade:</p>
+        <p><strong>Offer:</strong> {{ trade_post.quantity_offered }} of {{ trade_post.item_offered.name }}</p>
+        <p><strong>Request:</strong> {{ trade_post.quantity_requested }} of {{ trade_post.item_requested.name }}</p>
+    
+        <form method="POST" action="{% url 'confirm_trade' trade_post.id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-success">Confirm Request</button>
+        </form>
+    
+        <a href="{% url 'trade_post_list' %}" class="btn btn-secondary">Cancel</a>
+    </div>
+</body>
+</html>

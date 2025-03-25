@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            .trade-items{
+                margin: 10px;
+            }
+        </style>
+    </head>
+    <body>
+        {% include "login/navbar.html" %}
+        <div class="content">
+            <div class= "trade-items">
+                <h1>Available Items</h1>
+
+                {% if open_trades %}
+                <ul>
+                    {% for trade in open_trades %}
+                        <li>
+                            <strong>User #{{ trade.user_id }} offers {{ trade.quantity }} {{ trade.item_offered }}</strong>
+                            <p>Status: {{ trade.status }}</p>
+                        </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                    <p>No available trades at the moment.</p>
+                {% endif %}
+            </div>
+        </div>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .trade-items{
+            margin: 10px;
+        }
+    </style>
+</head>
+  <body>
+  {% include "login/navbar.html" %}
+  <div class="content">
+    <div class="trade-items">
+      <h2>Create a Trade Post</h2>
+      <form method="POST" action="{% url 'post_trade' %}">
+        {% csrf_token %}
+        {{ form.as_p }}  <!-- Other fields from the form -->
+
+        <button type="submit" class="btn btn-primary">Post Trade</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>    
+
+
+
+
+
+<!--
+      <div class="form-group">
+        <label for="item_requested">Item Requested</label>
+        <select name="item_requested" id="item_requested" class="form-control" required>
+          {% for item in all_items %}
+            <option value="{{ item.id }}">{{ item.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="quantity_offered">Quantity Offered</label>
+        <input type="number" name="quantity_offered" id="quantity_offered" class="form-control" required min="1">
+      </div>
+
+      <div class="form-group">
+        <label for="quantity_requested">Quantity Requested</label>
+        <input type="number" name="quantity_requested" id="quantity_requested" class="form-control" required min="1">
+      </div>
+-->

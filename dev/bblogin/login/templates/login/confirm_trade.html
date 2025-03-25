@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<body>
+    {% include "login/navbar.html" %}
+    <div class="content">
+        <h1>Confirm Trade</h1>
+
+        <p>You are about to confirm the following trade:</p>
+        <ul>
+            <li><strong>Item Offered by You:</strong> {{ transaction.item_a.name }} ({{ transaction.quantity_a }})</li>
+            <li><strong>Item Requested from User {{ transaction.user_b.username }}:</strong> {{ transaction.item_b.name }} ({{ transaction.quantity_b }})</li>
+        </ul>
+
+        {% if transaction.status == 'pending' %}
+            <form method="POST">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success">Confirm Trade</button>
+            </form>
+        {% else %}
+            <p>This trade has already been completed.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

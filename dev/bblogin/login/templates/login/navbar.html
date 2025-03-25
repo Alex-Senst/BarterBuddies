@@ -1,0 +1,74 @@
+<html>
+    <head>
+        <style>
+        *{
+            margin: 0px;
+            padding: 0px;
+            box-sizing: border-box;
+            background-color: #6488EA;
+        }
+        nav{
+            width: 100%;
+            height: 75px;
+            line-height: 75px;
+            padding: 0px 50px;
+            position: fixed;
+            background-image: linear-gradient(#033747, #012733);
+            z-index: 1000;
+        }
+        nav .logo p{
+            font-size: 30px;
+            font-weight: bold;
+            float: left;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            background-image: linear-gradient(#033747, #012733);
+        }
+        nav ul{
+            float: right;
+            background-image: linear-gradient(#033747, #012733);
+        }
+        nav li{
+            display: inline-block;
+            list-style: none;
+            background-image: linear-gradient(#033747, #012733);
+        }
+        nav li a{
+            font-size:18px;
+            text-transform: uppercase;
+            padding: 0px 30px;
+            color: white;
+            text-decoration: none;
+            background-image: linear-gradient(#033747, #012733);
+        }
+        nav li a:hover{
+            color: white;
+            transition: all 0.4% ease 0%;
+        }
+        .content {
+            padding-top: 80px; /* Push content down */
+        }        
+        </style>
+    </head>
+    <body>
+    <nav>
+        <div class="logo">
+            <p>BarterBuddies</p>
+        </div>
+        <ul>            
+            <li><a href="{% url 'create_item' %}">Create Item</a></li>
+            <li><a href="{% url 'item_list' %}">Your Items</a></li>
+            <li><a href="{% url 'view_trades' %}">View Trades</a></li>
+            <li><a href="{% url 'post_trade' %}">Post Trades</a></li>
+            <li><a href="{% url 'dashboard' %}">User Dashboard</a></li>
+            <li><a href="{% url 'user-logout' %}">Log Out</a></li>
+        </ul>
+    </nav>
+    <!-- Bootstrap JS (optional but useful) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pzjw8f+ua7Kw1TIq0YYA7eGpoh9vO4bwFlHbiQAiPsoXtWn5GlV+2EdGVX5WZjXs" crossorigin="anonymous"></script>
+
+
+    </body>
+    </html> 

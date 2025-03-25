@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<body>
+    {% include "login/navbar.html" %}
+        <div class="content">
+        <h2>Trade Details</h2>
+
+        <p><strong>Offered by:</strong> {{ trade_post.user.user.username }}</p>
+        <p><strong>Item Offered:</strong> {{ trade_post.item_offered.name }}</p>
+        <p><strong>Quantity Offered:</strong> {{ trade_post.quantity_offered }}</p>
+        <p><strong>Item Requested:</strong> {{ trade_post.item_requested.name }}</p>
+        <p><strong>Quantity Requested:</strong> {{ trade_post.quantity_requested }}</p>
+    
+        <h3>Equivalence Check</h3>
+        <p>
+        {% if is_equivalent %}
+            These items are equivalent for trade.
+        {% else %}
+            These items are not equivalent for trade.
+        {% endif %}
+        </p>
+    
+        <a href="{% url 'approve_trade' trade_post.id %}" class="btn btn-primary">Approve Trade</a>
+        <a href="{% url 'post_trade' %}" class="btn btn-secondary">Go Back</a>
+    </div>
+</body>
+</html>

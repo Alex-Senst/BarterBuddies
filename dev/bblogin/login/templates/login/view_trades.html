@@ -19,6 +19,12 @@
                         <li>
                             <strong>User #{{ trade.user_id }} offers {{ trade.quantity }} {{ trade.item_offered }}</strong>
                             <p>Status: {{ trade.status }}</p>
+                            {% if trade.status == "open" %}
+                                <form action="{% url 'request_trade' trade.id %}" method="post">
+                                    {% csrf_token %}
+                                        <button type="submit">Request Trade</button>
+                                </form>
+                            {% endif %}
                         </li>
                     {% endfor %}
                 </ul>

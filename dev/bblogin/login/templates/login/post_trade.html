@@ -11,7 +11,7 @@
   {% include "login/navbar.html" %}
   <div class="content">
     <div class="trade-items">
-      <h2>Create a Trade Post</h2>
+      <h2>Ready To Post Your Item For Trading?</h2>
       <form method="POST" action="{% url 'post_trade' %}">
         {% csrf_token %}
         {{ form.as_p }}  <!-- Other fields from the form -->

@@ -60,7 +60,12 @@ def my_login(request):
 
 @login_required(login_url="my-login")
 def dashboard(request):
-    return render(request, 'login/dashboard.html')
+    profile = Profile.objects.get(user=request.user)  # Get the logged-in user's profile
+    items = Item.objects.filter(posted_by=profile)  # Filter items by the logged-in user
+    return render(request, 'login/dashboard.html', {'items': items})
+    #items = Item.objects.all()
+    #return render(request, 'login/dashboard.html', {'items':items})
+    #return render(request, 'login/dashboard.html')
 
 def user_logout(request):
     auth.logout(request)
@@ -79,7 +84,7 @@ def user_logout(request):
 
 def item_list(request):
     items = Item.objects.all()
-    return render(request, 'login/item_list.html', {'items':items})
+    return render(request, 'login/dashboard.html', {'items':items})
 
 def item_detail(request, item_id):
     item = get_object_or_404(Item, pk=item_id)

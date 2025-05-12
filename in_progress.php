@@ -44,6 +44,7 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 
+
 // Check if the match is found
 if ($result->num_rows == 0) {
     echo "No active match found or match is not in progress.";
@@ -52,11 +53,9 @@ if ($result->num_rows == 0) {
 
 $row = $result->fetch_assoc();
 //var_dump($row);  // This will show the entire array returned by fetch_assoc
-
 //Store poster_has_items values
 $poster1_has_items = $row['poster1_has_items'];
 $poster2_has_items = $row['poster2_has_items'];
-var_dump($poster1_has_items, $poster2_has_items);
 
 
 // Get creators of post1 and post2
@@ -120,6 +119,8 @@ while ($r = $check_result->fetch_assoc()) {
         $partner_to_post2 = $r['user1_id'];
     }
 }
+var_dump($partner_to_post1);
+var_dump($partner_to_post2);
 
 // Also check if user is directly the creator
 $is_creator = ($current_user_id == $post1_creator || $current_user_id == $post2_creator);
@@ -346,9 +347,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_hash'])) {
           echo '<p>Your half of the code:</p>';
           echo htmlspecialchars($row['hash_user1']);
           echo '<button type="submit" class="send-btn" name="submit_hash">Submit Your Hash</button>';
-          echo "<p>Give this to your partner.</p>";
         }
         if ($row['sent_hash'] != 1) {
+          echo "<p>Give this to your partner.</p>";
           echo '<button type="submit" class="send-btn" name="send_hash">Send hash to your partner</button>';
         }
         if($poster1_has_items == 1 && $row['submitted_item'] != 1){
@@ -363,10 +364,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_hash'])) {
           echo '<p>Your half of the code:</p>';
           echo htmlspecialchars($row['hash_user2']);
           echo '<button type="submit" class="send-btn" name="submit_hash">Submit Your Hash</button>';
-          echo "<p>Give this to your partner.</p>";
         }
         if ($row['sent_hash'] != 1) {
-          echo "<p>Sent Hash Value: " . htmlspecialchars($row['sent_hash']) . "</p>";
+          echo "<p>Give this to your partner.</p>";
           echo '<button type="submit" class="send-btn" name="send_hash">Send hash to your partner</button>';
         }
         if($poster2_has_items == 1 && $row['submitted_item'] != 1){
@@ -390,6 +390,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_hash'])) {
         echo 'Your work is done! We are now waiting for others in your trade to complete their necessary tasks';
       }
     }
+    elseif($current_user_id == $partner_to_post1 && $row['sent_hash'] != 1){
+      echo '<p>Your partner has not yet sent you the hash for your transaction.';
+    }
     elseif ($current_user_id == $partner_to_post2 && $row['sent_hash'] == 1){
       if($row['submitted_hash'] != 1){
         echo '<p>Your half of the code: ' . htmlspecialchars($row['hash_user2']) . '</p>';
@@ -401,6 +404,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_hash'])) {
       if($row['submitted_item'] == 1 && $row['submitted_hash'] == 1 && $row['sent_hash'] == 1){
         echo 'Your work is done! We are now waiting for others in your trade to complete their necessary tasks';
       }
+    }
+    elseif($current_user_id == $partner_to_post2 && $row['sent_hash'] != 1){
+      echo '<p>Your partner has not yet sent you the hash for your transaction.';
     }
     ?>
     

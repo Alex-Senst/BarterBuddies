@@ -312,6 +312,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_hash'])) {
 
 
 
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -409,14 +410,69 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_hash'])) {
       echo '<p>Your partner has not yet sent you the hash for your transaction.';
     }
     ?>
-    
-    <br>
+
+<?php
+    // Fetch the status of all users in the match
+    $query_check_all_status = "
+        SELECT user_id, sent_hash, submitted_item, submitted_hash
+        FROM trade_confirmation
+        WHERE match_id = ?
+    ";
+
+    $stmt_check_all_status = $conn->prepare($query_check_all_status);
+    $stmt_check_all_status->bind_param("i", $match_id);
+    $stmt_check_all_status->execute();
+    $result_all_status = $stmt_check_all_status->get_result();
+
+    // Initialize an array to store the status for each user
+    $status_complete = [
+        'sent_hash' => true,
+        'submitted_item' => true,
+        'submitted_hash' => true
+    ];
+
+    // Loop through the results and check the status for all users
+    while ($row_status = $result_all_status->fetch_assoc()) {
+        if ($row_status['sent_hash'] == 0) {
+            $status_complete['sent_hash'] = false;
+        }
+        if ($row_status['submitted_item'] == 0) {
+            $status_complete['submitted_item'] = false;
+        }
+        if ($row_status['submitted_hash'] == 0) {
+            $status_complete['submitted_hash'] = false;
+        }
+    }
+
+    // Check if all users have completed the required actions
+    if ($status_complete['sent_hash'] && $status_complete['submitted_item'] && $status_complete['submitted_hash']) {
+      echo "All users have completed the trade actions.";
+  
+      // Update the status of the trade in both tables to 'completed'
+      $query_update_status = "
+          UPDATE posts
+          SET status = 'completed'
+          WHERE match_id = ?
+      ";
+      $stmt_update_status = $conn->prepare($query_update_status);
+      $stmt_update_status->bind_param("i", $match_id);
+      $stmt_update_status->execute();
+  
+      $query_update_trade_match = "
+          UPDATE trade_match
+          SET status = 'completed'
+          WHERE match_id = ?
+      ";
+      $stmt_update_trade_match = $conn->prepare($query_update_trade_match);
+      $stmt_update_trade_match->bind_param("i", $match_id);
+      $stmt_update_trade_match->execute();
+    } else {
+        echo '<p>Not all users have completed the required actions. Please check their status.</p>';
+    }
+    ?>
   </form>
 
   <br><a href="dashboard.php" class="nav-button">Back to Dashboard</a>
 </div>
 </body>
 </html>
-
-
-

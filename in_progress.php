@@ -140,30 +140,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['send_hash'])) {
   $stmt->execute();
   $stmt->close();
 
-// Step 2: Get partner's user_id from partners table
-$stmt = $conn->prepare("
-    SELECT 
-      CASE 
-        WHEN user1_id = ? THEN user2_id 
-        WHEN user2_id = ? THEN user1_id 
-      END AS partner_id
-    FROM partners
-    WHERE (user1_id = ? OR user2_id = ?)
-    LIMIT 1
-");
-$stmt->bind_param("iiii", $current_user_id, $current_user_id, $current_user_id, $current_user_id);
-$stmt->execute();
-$stmt->bind_result($partner_id);
-$stmt->fetch();
-$stmt->close();
-
-if (!empty($partner_id)) {
-  // Step 3: Update partner's sent_hash
-  $stmt = $conn->prepare("UPDATE trade_confirmation SET sent_hash = 1 WHERE match_id = ? AND user_id = ?");
-  $stmt->bind_param("ii", $match_id, $partner_id);
+  // Step 2: Get partner's user_id from partners table
+  $stmt = $conn->prepare("
+      SELECT 
+        CASE 
+          WHEN user1_id = ? THEN user2_id 
+          WHEN user2_id = ? THEN user1_id 
+        END AS partner_id
+      FROM partners
+      WHERE (user1_id = ? OR user2_id = ?)
+      LIMIT 1
+  ");
+  $stmt->bind_param("iiii", $current_user_id, $current_user_id, $current_user_id, $current_user_id);
   $stmt->execute();
+  $stmt->bind_result($partner_id);
+  $stmt->fetch();
   $stmt->close();
-}
+
+  if (!empty($partner_id)) {
+    // Step 3: Update partner's sent_hash
+    $stmt = $conn->prepare("UPDATE trade_confirmation SET sent_hash = 1 WHERE match_id = ? AND user_id = ?");
+    $stmt->bind_param("ii", $match_id, $partner_id);
+    $stmt->execute();
+    $stmt->close();
+  }
 
 
   $stmt = $conn->prepare("SELECT 
@@ -196,12 +196,117 @@ if (!empty($partner_id)) {
   $stmt->execute();
   $result = $stmt->get_result();
   $row = $result->fetch_assoc();
+}
 
-// Debug output to check if the data is being updated
-echo "<pre>";
-var_dump($row); // Inspect the updated row data
-echo "</pre>";
+// Check if the form is submitted
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['send_item'])) {
+  $match_id = $row['match_id'];
+  $current_user_id = $_SESSION['user_id'];
 
+  // Step 1: Update current user's sent_hash
+  $stmt = $conn->prepare("UPDATE trade_confirmation SET submitted_item = 1 WHERE match_id = ? AND user_id = ?");
+  $stmt->bind_param("ii", $match_id, $current_user_id);
+  $stmt->execute();
+  $stmt->close();
+
+  // Step 2: Get partner's user_id from partners table
+  $stmt = $conn->prepare("
+      SELECT 
+        CASE 
+          WHEN user1_id = ? THEN user2_id 
+          WHEN user2_id = ? THEN user1_id 
+        END AS partner_id
+      FROM partners
+      WHERE (user1_id = ? OR user2_id = ?)
+      LIMIT 1
+  ");
+  $stmt->bind_param("iiii", $current_user_id, $current_user_id, $current_user_id, $current_user_id);
+  $stmt->execute();
+  $stmt->bind_result($partner_id);
+  $stmt->fetch();
+  $stmt->close();
+
+  if (!empty($partner_id)) {
+    // Step 3: Update partner's submitted_item
+    $stmt = $conn->prepare("UPDATE trade_confirmation SET submitted_item = 1 WHERE match_id = ? AND user_id = ?");
+    $stmt->bind_param("ii", $match_id, $partner_id);
+    $stmt->execute();
+    $stmt->close();
+  }
+
+  $stmt = $conn->prepare("SELECT 
+            tm.match_id, 
+            tm.hash_user1, 
+            tm.hash_user2, 
+            tm.status,
+            tc.sent_hash,
+            tc.submitted_item,
+            tc.submitted_hash,
+            tc.user_id AS tc_user_id,
+            tm.post1_id,
+            tm.post2_id,
+            u1.full_name AS user1_name,
+            u2.full_name AS user2_name,
+            m1.poster_has_items AS poster1_has_items,
+            m2.poster_has_items AS poster2_has_items
+          FROM trade_match tm
+          JOIN posts p1 ON p1.post_id = tm.post1_id
+          JOIN posts p2 ON p2.post_id = tm.post2_id
+          JOIN trade_members m1 ON m1.post_id = p1.post_id
+          JOIN trade_members m2 ON m2.post_id = p2.post_id
+          JOIN users u1 ON u1.user_id = m1.created_by
+          JOIN users u2 ON u2.user_id = m2.created_by
+          JOIN trade_confirmation tc ON tc.match_id = tm.match_id
+          WHERE tm.match_id = ? AND tm.status = 'in progress'
+          AND (tc.user_id = ?)"
+  );
+  $stmt->bind_param("ii", $match_id, $current_user_id);
+  $stmt->execute();
+  $result = $stmt->get_result();
+  $row = $result->fetch_assoc();
+}
+
+// Check if the form is submitted
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_hash'])) {
+  $match_id = $row['match_id'];
+  $current_user_id = $_SESSION['user_id'];
+
+  // Step 1: Update current user's submitted_hash
+  $stmt = $conn->prepare("UPDATE trade_confirmation SET submitted_hash = 1 WHERE match_id = ? AND user_id = ?");
+  $stmt->bind_param("ii", $match_id, $current_user_id);
+  $stmt->execute();
+  $stmt->close();
+
+  $stmt = $conn->prepare("SELECT 
+            tm.match_id, 
+            tm.hash_user1, 
+            tm.hash_user2, 
+            tm.status,
+            tc.sent_hash,
+            tc.submitted_item,
+            tc.submitted_hash,
+            tc.user_id AS tc_user_id,
+            tm.post1_id,
+            tm.post2_id,
+            u1.full_name AS user1_name,
+            u2.full_name AS user2_name,
+            m1.poster_has_items AS poster1_has_items,
+            m2.poster_has_items AS poster2_has_items
+          FROM trade_match tm
+          JOIN posts p1 ON p1.post_id = tm.post1_id
+          JOIN posts p2 ON p2.post_id = tm.post2_id
+          JOIN trade_members m1 ON m1.post_id = p1.post_id
+          JOIN trade_members m2 ON m2.post_id = p2.post_id
+          JOIN users u1 ON u1.user_id = m1.created_by
+          JOIN users u2 ON u2.user_id = m2.created_by
+          JOIN trade_confirmation tc ON tc.match_id = tm.match_id
+          WHERE tm.match_id = ? AND tm.status = 'in progress'
+          AND (tc.user_id = ?)"
+  );
+  $stmt->bind_param("ii", $match_id, $current_user_id);
+  $stmt->execute();
+  $result = $stmt->get_result();
+  $row = $result->fetch_assoc();
 }
 
 
@@ -234,47 +339,70 @@ echo "</pre>";
   <h3>Match ID: <?= $row['match_id'] ?></h3>
 
   <form method="post">
-    <p>Your half of the code:</p>
     <?php
     if($is_creator){
       if($current_user_id == $post1_creator){
-        echo htmlspecialchars($row['hash_user1']);
-        echo "<p>Give this to your partner.</p>";
+        if($row['submitted_hash'] != 1){
+          echo '<p>Your half of the code:</p>';
+          echo htmlspecialchars($row['hash_user1']);
+          echo '<button type="submit" class="send-btn" name="submit_hash">Submit Your Hash</button>';
+          echo "<p>Give this to your partner.</p>";
+        }
         if ($row['sent_hash'] != 1) {
           echo '<button type="submit" class="send-btn" name="send_hash">Send hash to your partner</button>';
         }
         if($poster1_has_items == 1 && $row['submitted_item'] != 1){
            echo '<button type="submit" class="send-btn" name="send_item">Send your item</button>';      
         }
+        if($row['submitted_item'] == 1 && $row['submitted_hash'] == 1 && $row['sent_hash'] == 1){
+          echo 'Your work is done! We are now waiting for others in your trade to complete their necessary tasks';
+        }
       }
       elseif($current_user_id == $post2_creator){
-        echo htmlspecialchars($row['hash_user2']);
-        echo "<p>Give this to your partner.</p>";
+        if($row['submitted_hash'] != 1){
+          echo '<p>Your half of the code:</p>';
+          echo htmlspecialchars($row['hash_user2']);
+          echo '<button type="submit" class="send-btn" name="submit_hash">Submit Your Hash</button>';
+          echo "<p>Give this to your partner.</p>";
+        }
         if ($row['sent_hash'] != 1) {
           echo "<p>Sent Hash Value: " . htmlspecialchars($row['sent_hash']) . "</p>";
           echo '<button type="submit" class="send-btn" name="send_hash">Send hash to your partner</button>';
         }
         if($poster2_has_items == 1 && $row['submitted_item'] != 1){
           echo '<button type="submit" class="send-btn" name="send_item">Send your item</button>';
-
+        }
+        if($row['submitted_item'] == 1 && $row['submitted_hash'] == 1 && $row['sent_hash'] == 1){
+          echo 'Your work is done! We are now waiting for others in your trade to complete their necessary tasks';
         }
       }
     }
     elseif($current_user_id == $partner_to_post1 && $row['sent_hash'] == 1){
-      echo htmlspecialchars($row['hash_user1']);
+      if($row['submitted_hash'] != 1){
+        echo '<p>Your half of the code:</p>';
+        echo htmlspecialchars($row['hash_user1']);
+        echo '<button type="submit" class="send-btn" name="submit_hash">Submit Your Hash</button>';
+      }
       if($poster1_has_items == 0 && $row['submitted_item'] != 1){
         echo '<button type="submit" class="send-btn" name="send_item">Send your item</button>';
       }
+      if($row['submitted_item'] == 1 && $row['submitted_hash'] == 1 && $row['sent_hash'] == 1){
+        echo 'Your work is done! We are now waiting for others in your trade to complete their necessary tasks';
+      }
     }
     elseif ($current_user_id == $partner_to_post2 && $row['sent_hash'] == 1){
-      echo htmlspecialchars($row['hash_user2']);
+      if($row['submitted_hash'] != 1){
+        echo '<p>Your half of the code: ' . htmlspecialchars($row['hash_user2']) . '</p>';
+        echo '<button type="submit" class="send-btn" name="submit_hash">Submit Your Hash</button>';
+      }
       if($poster2_has_items == 0 && $row['submitted_item'] != 1){
         echo '<button type="submit" class="send-btn" name="send_item">Send your item</button>';
       }
+      if($row['submitted_item'] == 1 && $row['submitted_hash'] == 1 && $row['sent_hash'] == 1){
+        echo 'Your work is done! We are now waiting for others in your trade to complete their necessary tasks';
+      }
     }
     ?>
-    
-    <button type="submit" class="send-btn" name="action" value="submit_hash">Submit Your Hash</button>
     
     <br>
   </form>

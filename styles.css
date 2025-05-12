@@ -1,0 +1,212 @@
+body {
+    margin: 0;
+    font-family: sans-serif;
+    background-color: #f7f1ff;
+  }
+
+  ul {
+    list-style: none;
+  }
+  
+  .navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #260656;; /* Light purple */
+    padding: 10px 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .navbar-left {
+    display: flex;
+    align-items: center;
+  }
+
+  .navbar-right {
+    display: flex;
+    align-items: center;
+  }  
+  
+  .logo {
+    font-weight: bold;
+    font-size: 35px;;
+    margin-right: 20px;
+    color: white;
+    font-family: 'Dancing Script', cursive;
+  }
+  
+  .nav-button {
+    margin-right: 15px;
+    background-color: #4b0082;
+    border: none;
+    font-family: 'Tahoma';
+    font-size: 17px;
+    cursor: pointer;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 5px;
+    transition: background-color 0.2s;
+    text-decoration: none;
+  }
+  
+  .nav-button:hover, .nav-button.active {
+    background-color: #7412ba; /* Slightly darker purple on hover */
+  }
+  
+  .title {
+    display: flex;
+    justify-content: left;  /* Centers horizontally */
+    padding-left: 10px;
+    font-family: 'Tahoma';
+    font-size: 50px;
+    color: black;
+    text-align: center;
+    width: 100vw;  /* Full width of the viewport */
+    margin: 0 auto;  /* Ensures no extra margin */
+}
+
+.section-header {
+    background-color: #f0e6ff; /* Light lavender */
+    font-family: 'Trebuchet MS', sans-serif;
+    font-size: 14px;
+    padding: 15px 25px;
+    border-left: 6px solid #ad74e6;
+    margin: 25px 0 10px;
+  }
+  
+  .section-header h2 {
+    margin: 0;
+    color: #4b0082;
+  }
+
+  .trade-card {
+    background-color: #f9f0ff;
+    border: 1px solid #d6b3ff;
+    padding: 15px 20px;
+    margin: 15px 0;
+    border-radius: 8px;
+  }
+  
+  .trade-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  
+  .trade-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  
+  .trade-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  
+  .trade-name {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: #4b0082;
+  }
+  
+  .small-btn {
+    background-color: #b266ff;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    margin: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.95em;
+    font-family: 'Trebuchet MS', sans-serif;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+  }
+  
+  .small-btn:hover {
+    background-color: #9933ff;
+  }
+  
+  .send-btn {
+    background-color: #ffb366;
+    color: #4b0082;
+    font-weight: bold;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+    margin: 5px;
+  }
+  
+  .send-btn:hover {
+    background-color: #ffa64d;
+  }
+  
+  .action-label {
+    font-weight: 600;
+    color: #9933ff;
+  }
+  
+  .trade-form-container {
+    max-width: 500px;
+    margin: 40px auto;
+    padding: 25px;
+    background-color: #f5e6ff;
+    border: 2px solid #d6b3ff;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .trade-form-container h2 {
+    margin-bottom: 20px;
+    color: #4b0082;
+    font-size: 1.5em;
+  }
+  
+  .trade-form label {
+    display: block;
+    margin: 12px 0 4px;
+    font-weight: bold;
+    color: #4b0082;
+  }
+  
+  .trade-form select,
+  .trade-form input[type="number"] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+  
+  .checkbox-row {
+    margin-top: 16px;
+    color: #4b0082;
+    font-weight: bold;
+  }
+  
+  .checkbox-row label {
+    margin-right: 15px;
+  }
+  
+  .submit-btn {
+    margin-top: 20px;
+    background-color: #b266ff;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    cursor: pointer;
+  }
+  
+  .submit-btn:hover {
+    background-color: #9933ff;
+  }
+  

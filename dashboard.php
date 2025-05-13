@@ -99,7 +99,7 @@ $matched = $conn->prepare("
       ON (p1.user1_id = tm1.created_by OR p1.user2_id = tm1.created_by)
     LEFT JOIN partners p2 
       ON (p2.user1_id = tm2.created_by OR p2.user2_id = tm2.created_by)
-    WHERE
+    WHERE(
       (
         tm1.created_by = ? 
         OR (p1.user1_id = ? AND p1.user2_id = tm1.created_by)
@@ -110,6 +110,7 @@ $matched = $conn->prepare("
         OR (p2.user1_id = ? AND p2.user2_id = tm2.created_by)
         OR (p2.user2_id = ? AND p2.user1_id = tm2.created_by)
       )
+        )
     AND tm.status = 'in progress'
 ");
 $matched->bind_param("iiiiii", $user_id, $user_id, $user_id, $user_id, $user_id, $user_id);  // Include both the user's ID and partner's IDs
@@ -119,24 +120,29 @@ $matched_result = $matched->get_result();
 
 //$completed = $conn->query("SELECT * FROM trades WHERE (sender_id = $user_id OR receiver_id = $user_id) AND status = 'completed'");
 $completed = $conn->prepare("
-    SELECT match_id
-    FROM trade_match
-    WHERE (post1_id IN (
-                SELECT post_id FROM trade_members WHERE created_by = ?
-            )
-        OR post2_id IN (
-                SELECT post_id FROM trade_members WHERE created_by = ?
-            )
-        OR post1_id IN (
-                SELECT post_id FROM trade_members WHERE created_by = ?
-            )
-        OR post2_id IN (
-                SELECT post_id FROM trade_members WHERE created_by = ?
-            )
-    )
-    AND status = 'completed'
+    SELECT tm.match_id, tm.post1_id, tm.post2_id
+    FROM trade_match tm
+    JOIN trade_members tm1 ON tm.post1_id = tm1.post_id
+    JOIN trade_members tm2 ON tm.post2_id = tm2.post_id
+    LEFT JOIN partners p1 
+      ON (p1.user1_id = tm1.created_by OR p1.user2_id = tm1.created_by)
+    LEFT JOIN partners p2 
+      ON (p2.user1_id = tm2.created_by OR p2.user2_id = tm2.created_by)
+    WHERE(
+      (
+        tm1.created_by = ? 
+        OR (p1.user1_id = ? AND p1.user2_id = tm1.created_by)
+        OR (p1.user2_id = ? AND p1.user1_id = tm1.created_by)
+      )
+    OR (
+        tm2.created_by = ? 
+        OR (p2.user1_id = ? AND p2.user2_id = tm2.created_by)
+        OR (p2.user2_id = ? AND p2.user1_id = tm2.created_by)
+      )
+        )
+    AND tm.status = 'completed'
 ");
-$completed->bind_param("iiii", $user_id, $user_id, $user1_id, $user1_id);
+$completed->bind_param("iiiiii", $user_id, $user_id, $user_id, $user_id, $user_id, $user_id);
 $completed->execute();
 $completed_result = $completed->get_result();
 
@@ -252,12 +258,12 @@ $stmt->close();
             <div class="trade-card">
                 <?php while ($row = $completed_result->fetch_assoc()): ?>
                     <div class="trade-info">
-                        <span class="trade-name">Trade #<?= $row['post_id'] ?> completed</span>
+                        <span class="trade-name">Completed Trade ID: <?= htmlspecialchars($row['match_id']) ?></span>
+                        <a href="trade_details.php?match_id=<?= $row['match_id'] ?>" class="small-btn">View Details</a>
                     </div>
                 <?php endwhile; ?>
             </div>
         <?php endif; ?>
     </div>
-
 </body>
 </html>

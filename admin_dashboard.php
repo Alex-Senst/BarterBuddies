@@ -33,9 +33,14 @@ if (isset($_GET['suspend'])) {
 } elseif (isset($_GET['promote'])) {
     $id = intval($_GET['promote']);
     $conn->query("UPDATE users SET is_admin = 1 WHERE user_id = $id");
-} elseif (isset($_GET['delete_txn'])) {
-  $txn_id = intval($_GET['delete_txn']);
-  $conn->query("DELETE FROM transactions WHERE transaction_id = $txn_id");
+  } elseif (isset($_GET['delete_match'])) {
+    $match_id = intval($_GET['delete_match']);
+    $conn->query("DELETE FROM trade_match WHERE match_id = $match_id");
+  } elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
+    $match_id = intval($_POST['match_id']);
+    $new_status = $conn->real_escape_string($_POST['new_status']);
+    $conn->query("UPDATE trade_match SET status = '$new_status' WHERE match_id = $match_id");
+    
 } elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
   $txn_id = intval($_POST['transaction_id']);
   $new_status = $conn->real_escape_string($_POST['new_status']);
@@ -48,23 +53,54 @@ if (isset($_GET['suspend'])) {
 $all_users = $conn->query("SELECT * FROM users ORDER BY user_id ASC");
 
 $all_transactions = $conn->query("
-    SELECT 
-        t.transaction_id,
-        t.user_a_id,
-        t.user_b_id,
-        ua.full_name AS user_a_name,
-        ub.full_name AS user_b_name,
-        t.item_from_a,
-        t.item_from_b,
-        t.qty_from_a,
-        t.qty_from_b,
-        t.status,
-        t.created_at
-    FROM transactions t
-    JOIN users ua ON t.user_a_id = ua.user_id
-    JOIN users ub ON t.user_b_id = ub.user_id
-    ORDER BY t.created_at DESC
+  SELECT
+    tm.match_id,
+    tm.status AS match_status,
+    tm.hash_code,
+    
+    u1.full_name AS user1_name,
+    u2.full_name AS user2_name,
+    
+    i1.item_name AS user1_item_offered,
+    td1.quantity_offered AS user1_qty_offered,
+    i2.item_name AS user1_item_desired,
+    td1.quantity_desired AS user1_qty_desired,
+    
+    i3.item_name AS user2_item_offered,
+    td2.quantity_offered AS user2_qty_offered,
+    i4.item_name AS user2_item_desired,
+    td2.quantity_desired AS user2_qty_desired,
+    
+    GREATEST(p1.created_at, p2.created_at) AS trade_time
+    
+  FROM trade_match tm
+  JOIN posts p1 ON tm.post1_id = p1.post_id
+  JOIN posts p2 ON tm.post2_id = p2.post_id
+  
+  JOIN trade_members tm1 ON tm1.post_id = p1.post_id
+  JOIN trade_members tm2 ON tm2.post_id = p2.post_id
+  
+  JOIN users u1 ON tm1.created_by = u1.user_id
+  JOIN users u2 ON tm2.created_by = u2.user_id
+  
+  JOIN trade_details td1 ON td1.post_id = p1.post_id
+  JOIN trade_details td2 ON td2.post_id = p2.post_id
+  
+  JOIN items i1 ON td1.item_offered = i1.item_id
+  JOIN items i2 ON td1.item_desired = i2.item_id
+  JOIN items i3 ON td2.item_offered = i3.item_id
+  JOIN items i4 ON td2.item_desired = i4.item_id
+  
+  ORDER BY trade_time DESC
 ");
+
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_match_status'])) {
+  $match_id = intval($_POST['match_id']);
+  $new_status = $conn->real_escape_string($_POST['new_status']);
+  $conn->query("UPDATE trade_match SET status = '$new_status' WHERE match_id = $match_id");
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -111,37 +147,37 @@ $all_transactions = $conn->query("
       <th>Date</th>
       <th>Actions</th>
     </tr>
-    <?php while ($txn = $all_transactions->fetch_assoc()): ?>
+    <?php while ($row = $all_transactions->fetch_assoc()): ?>
     <tr>
-      <td><?= $txn['transaction_id'] ?></td>
-      <td><?= htmlspecialchars($txn['user_a_name']) ?></td>
-      <td><?= htmlspecialchars($txn['user_b_name']) ?></td>
-      <td><?= htmlspecialchars($txn['qty_from_a']) ?> × <?= htmlspecialchars($txn['item_from_a']) ?></td>
-      <td><?= htmlspecialchars($txn['qty_from_b']) ?> × <?= htmlspecialchars($txn['item_from_b']) ?></td>
+      <td><?= $row['match_id'] ?></td>
+      <td><?= htmlspecialchars($row['user1_name']) ?></td>
+      <td><?= htmlspecialchars($row['user2_name']) ?></td>
+      
+      <td><?= $row['user1_qty_offered'] ?> × <?= htmlspecialchars($row['user1_item_offered']) ?></td>
+      <td><?= $row['user1_qty_desired'] ?> × <?= htmlspecialchars($row['user1_item_desired']) ?></td>
+      
+      <td><?= $row['user2_qty_offered'] ?> × <?= htmlspecialchars($row['user2_item_offered']) ?></td>
+      <td><?= $row['user2_qty_desired'] ?> × <?= htmlspecialchars($row['user2_item_desired']) ?></td>
+      
       <td>
-      <form method="POST" style="display: flex; align-items: center;">
-        <input type="hidden" name="transaction_id" value="<?= $txn['transaction_id'] ?>">
-        <select name="new_status">
-          <?php
-            $statuses = ['pending', 'awaiting-confirmation', 'completed', 'failed'];
-            foreach ($statuses as $status_option) {
-              $selected = ($txn['status'] === $status_option) ? 'selected' : '';
-              echo "<option value='$status_option' $selected>$status_option</option>";
-            }
-          ?>
-        </select>
-        <button type="submit" name="update_status" class="small-btn">Update</button>
-      </form>
-    </td>
-
-      <td><?= htmlspecialchars($txn['created_at']) ?></td>
-      <td>
-        <a href="?delete_txn=<?= $txn['transaction_id'] ?>" onclick="return confirm('Delete this transaction?')">Delete</a>
-        |
-        <a href="edit_transaction.php?id=<?= $txn['transaction_id'] ?>">Edit</a>
+        <form method="POST" style="display: flex; align-items: center;">
+          <input type="hidden" name="match_id" value="<?= $row['match_id'] ?>">
+          <select name="new_status">
+            <?php
+              $statuses = ['in progress', 'completed', 'cancelled'];
+              foreach ($statuses as $status_option) {
+                $selected = ($row['match_status'] === $status_option) ? 'selected' : '';
+                echo "<option value='$status_option' $selected>$status_option</option>";
+              }
+            ?>
+          </select>
+          <button type="submit" name="update_match_status" class="small-btn">Update</button>
+        </form>
       </td>
+      <td><?= htmlspecialchars($row['trade_time']) ?></td>
     </tr>
-    <?php endwhile; ?>
+  <?php endwhile; ?>
+
   </table>
 </div>
 

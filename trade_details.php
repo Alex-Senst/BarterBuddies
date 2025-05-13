@@ -140,8 +140,6 @@ $quantity_received = round($trade['quantity_desired'] * 0.95, 2);
             <p><strong>Quantity Offered:</strong> <?php echo htmlspecialchars($trade['quantity_offered']); ?></p>
             <p><strong>Item Received:</strong> <?php echo htmlspecialchars($trade['item_desired_name']); ?></p>
             <p><strong>Quantity Received (after 5% fee):</strong> <?php echo htmlspecialchars($quantity_received); ?></p>
-            <p><strong>Sender:</strong> <?php echo htmlspecialchars($names['sender']); ?></p>
-            <p><strong>Receiver:</strong> <?php echo htmlspecialchars($names['receiver']); ?></p>
             <p><strong>Status:</strong> <?php echo htmlspecialchars($data['match_status']); ?></p>
             <p><strong>Completed At:</strong> <?php echo htmlspecialchars($trade['completed_at']); ?></p>
             </li>

@@ -356,7 +356,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_hash'])) {
         if($poster1_has_items == 1 && $row['submitted_item'] != 1){
            echo '<button type="submit" class="send-btn" name="send_item">Send your item</button>';      
         }
-        if($row['submitted_item'] == 1 && $row['submitted_hash'] == 1 && $row['sent_hash'] == 1){
+        if(($row['submitted_item'] == 1 && $row['submitted_hash'] == 1 && $row['sent_hash'] == 1) || ($poster1_has_items != 1 && $row['sent_hash'] == 1 && $row['submitted_hash'] == 1)){
           echo 'Your work is done! We are now waiting for others in your trade to complete their necessary tasks';
         }
       }
@@ -373,7 +373,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_hash'])) {
         if($poster2_has_items == 1 && $row['submitted_item'] != 1){
           echo '<button type="submit" class="send-btn" name="send_item">Send your item</button>';
         }
-        if($row['submitted_item'] == 1 && $row['submitted_hash'] == 1 && $row['sent_hash'] == 1){
+        if(($row['submitted_item'] == 1 && $row['submitted_hash'] == 1 && $row['sent_hash'] == 1) || ($poster1_has_items != 1 && $row['sent_hash'] == 1 && $row['submitted_hash'] == 1)){
           echo 'Your work is done! We are now waiting for others in your trade to complete their necessary tasks';
         }
       }
@@ -445,54 +445,54 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_hash'])) {
     }
 
     // All users have completed their actions, update statuses
+  if ($status_complete['sent_hash'] && $status_complete['submitted_item'] && $status_complete['submitted_hash']) {
+    // Get the two post IDs from trade_match
+    $query_get_post_ids = "
+    SELECT post1_id, post2_id
+    FROM trade_match
+    WHERE match_id = ?
+    ";
+    $stmt_get_post_ids = $conn->prepare($query_get_post_ids);
+    $stmt_get_post_ids->bind_param("i", $match_id);
+    $stmt_get_post_ids->execute();
+    $result = $stmt_get_post_ids->get_result();
 
-  // Get the two post IDs from trade_match
-  $query_get_post_ids = "
-  SELECT post1_id, post2_id
-  FROM trade_match
-  WHERE match_id = ?
-  ";
-  $stmt_get_post_ids = $conn->prepare($query_get_post_ids);
-  $stmt_get_post_ids->bind_param("i", $match_id);
-  $stmt_get_post_ids->execute();
-  $result = $stmt_get_post_ids->get_result();
+    if ($row = $result->fetch_assoc()) {
+    $post1_id = $row['post1_id'];
+    $post2_id = $row['post2_id'];
 
-  if ($row = $result->fetch_assoc()) {
-  $post1_id = $row['post1_id'];
-  $post2_id = $row['post2_id'];
+    // Update status in posts table for both posts
+    $query_update_posts = "
+        UPDATE posts
+        SET status = 'completed'
+        WHERE post_id IN (?, ?)
+    ";
+    $stmt_update_posts = $conn->prepare($query_update_posts);
+    $stmt_update_posts->bind_param("ii", $post1_id, $post2_id);
+    $stmt_update_posts->execute();
+    }
 
-  // Update status in posts table for both posts
-  $query_update_posts = "
-      UPDATE posts
-      SET status = 'completed'
-      WHERE post_id IN (?, ?)
-  ";
-  $stmt_update_posts = $conn->prepare($query_update_posts);
-  $stmt_update_posts->bind_param("ii", $post1_id, $post2_id);
-  $stmt_update_posts->execute();
+    // Update the trade_match table status
+    $query_update_trade_match = "
+    UPDATE trade_match
+    SET status = 'completed'
+    WHERE match_id = ?
+    ";
+    $stmt_update_trade_match = $conn->prepare($query_update_trade_match);
+    $stmt_update_trade_match->bind_param("i", $match_id);
+    $stmt_update_trade_match->execute();
+
+    // Update completed_at timestamp in trade_details for both posts
+    $query_update_trade_details = "
+    UPDATE trade_details
+    SET completed_at = NOW()
+    WHERE post_id IN (?, ?)
+    ";
+    $stmt_update_trade_details = $conn->prepare($query_update_trade_details);
+    $stmt_update_trade_details->bind_param("ii", $post1_id, $post2_id);
+    $stmt_update_trade_details->execute();
   }
-
-  // Update the trade_match table status
-  $query_update_trade_match = "
-  UPDATE trade_match
-  SET status = 'completed'
-  WHERE match_id = ?
-  ";
-  $stmt_update_trade_match = $conn->prepare($query_update_trade_match);
-  $stmt_update_trade_match->bind_param("i", $match_id);
-  $stmt_update_trade_match->execute();
-
-  // Update completed_at timestamp in trade_details for both posts
-  $query_update_trade_details = "
-  UPDATE trade_details
-  SET completed_at = NOW()
-  WHERE post_id IN (?, ?)
-  ";
-  $stmt_update_trade_details = $conn->prepare($query_update_trade_details);
-  $stmt_update_trade_details->bind_param("ii", $post1_id, $post2_id);
-  $stmt_update_trade_details->execute();
-
-    ?>
+  ?>
   </form>
 
   <br><a href="dashboard.php" class="nav-button">Back to Dashboard</a>
